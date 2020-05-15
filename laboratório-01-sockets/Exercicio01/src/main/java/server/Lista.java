@@ -4,15 +4,24 @@ import java.util.*;
 public class Lista {
     private ArrayList<String> lista;
     private String nome;
+    private String conteudo;
 
-    public Lista(String name){
-        this.nome = name;
+    public Lista(){
         this.lista = new ArrayList<>();
     }
-
-    public void addLista(String algo){
-        this.lista.add(algo);
+    public Boolean setNome(String nomeLista){
+        this.nome = nomeLista;
+        return true;
     }
+    public String getNome(){
+        return this.nome;
+    }
+
+    public Boolean setConteudo(String conteudo){
+        this.lista.add(conteudo);
+        return true;
+    }
+
     public String getConteudo(){
         if(!this.lista.isEmpty()) {
             return this.lista.get(lista.size()-1);
@@ -25,8 +34,5 @@ public class Lista {
             return true;
         }
         return false;
-    }
-    public String getNome(){
-        return this.nome;
     }
 }

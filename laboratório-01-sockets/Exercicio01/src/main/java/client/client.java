@@ -16,30 +16,37 @@ import java.util.Scanner;
  * @author Emerson Ribeiro de Mello
  */
 public class client {
-
+    static private int porta ;
+    static private String ip = "";
     public static void main(String[] args) throws IOException{
-        int porta = 1234;
-        String ip = "127.0.0.1";
+        try{
+            ip = args[0];
+            porta = Integer.parseInt(args[1]);
+        }catch(Exception e){
+            ip = "127.0.0.1";
+            porta = 1234;
+        }
         Scanner ler = new Scanner(System.in);
 
-        /* Estabele conexao com o servidor */
+        /* Estabelece conexao com o servidor */
         Socket conexao = new Socket(ip,porta);
         System.out.println("Conectado! " + conexao);
         DataOutputStream fluxoSaida = new DataOutputStream(conexao.getOutputStream());
         DataInputStream fluxoEntrada = new DataInputStream(
                 new BufferedInputStream(conexao.getInputStream()));
-        String op = "";
-        while(!op.equals("5")){
-            System.out.println(fluxoEntrada.readUTF());
-            op = ler.next();
-            fluxoSaida.writeUTF(op);
-            fluxoSaida.flush();
+        String op;
+        while(true){
+            String resposta = fluxoEntrada.readUTF();
+            if(resposta.equals("5"))break;
+            else {
+                System.out.println(resposta);
+                op = ler.nextLine();
+                fluxoSaida.writeUTF(op);
+                fluxoSaida.flush();
+            }
+
         }
 
-
-
-        /**************************/
-        /* Fecha fluxos e socket */
         fluxoSaida.close();
         fluxoEntrada.close();
         conexao.close();
