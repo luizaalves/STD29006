@@ -1,10 +1,8 @@
 package servidor;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class ServidorThread extends Thread {
     private Socket conexao;
@@ -12,31 +10,30 @@ public class ServidorThread extends Thread {
         this.conexao = c;
     }
     public void run() {
-        String mensagemCliente = "";
-        while (!mensagemCliente.equals("fim")) {
-            /* Estabelece fluxos de entrada e saida */
-            DataInputStream fluxoEntrada = null;
-            DataOutputStream fluxoSaida = null;
-            try {
-                fluxoEntrada = new DataInputStream(
-                        new BufferedInputStream(conexao.getInputStream()));
-                fluxoSaida = new DataOutputStream(conexao.getOutputStream());
-                mensagemCliente = fluxoEntrada.readUTF();
-                System.out.println("Cliente> "+mensagemCliente);
+        System.out.println("Conectou!");
+        /* Estabelece fluxos de entrada e saida */
+        DataInputStream fluxoEntrada;
+        //DataOutputStream fluxoSaida;
+        try {
+            fluxoEntrada = new DataInputStream(
+                    new BufferedInputStream(conexao.getInputStream()));
+            FileOutputStream fos = new FileOutputStream(Servidor.pastaArquivo+"recebido.txt");
+            int count = Integer.parseInt(fluxoEntrada.readUTF());
+            byte[] data = new byte[2048];
+            int read;
+            int totalRead = 0;
 
-                if(mensagemCliente.equals("fim")){
-                    fluxoSaida.writeUTF("Servidor> Tchau cliente!!!");
-                    fluxoEntrada.close();
-                    fluxoSaida.close();
-                    conexao.close();
-                }
-                else {
-                    fluxoSaida.writeUTF("Servidor: Cliente> "+mensagemCliente);
-                }
-
-            } catch (IOException e) {
-                e.printStackTrace();
+            while((read=fluxoEntrada.read(data,0,Math.min(data.length,count)))>0){
+                totalRead += read;
+                count -= read;
+                System.out.println("read " + totalRead + " bytes.");
+                fos.write(data, 0, read);
             }
+            fos.close();
+            fluxoEntrada.close();
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
