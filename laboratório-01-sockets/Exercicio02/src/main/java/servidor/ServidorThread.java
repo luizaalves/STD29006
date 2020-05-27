@@ -2,7 +2,7 @@ package servidor;
 
 import java.io.*;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.lang.Thread;
 
 public class ServidorThread extends Thread {
     private Socket conexao;
@@ -11,26 +11,25 @@ public class ServidorThread extends Thread {
     }
     public void run() {
         System.out.println("Conectou!");
-        /* Estabelece fluxos de entrada e saida */
-        DataInputStream fluxoEntrada;
-        //DataOutputStream fluxoSaida;
         try {
-            fluxoEntrada = new DataInputStream(
+            System.out.println(this.conexao.getInetAddress());
+            DataInputStream fluxoEntrada = new DataInputStream(
                     new BufferedInputStream(conexao.getInputStream()));
-            FileOutputStream fos = new FileOutputStream(Servidor.pastaArquivo+"recebido.txt");
-            int count = Integer.parseInt(fluxoEntrada.readUTF());
-            byte[] data = new byte[2048];
-            int read;
-            int totalRead = 0;
-
-            while((read=fluxoEntrada.read(data,0,Math.min(data.length,count)))>0){
-                totalRead += read;
-                count -= read;
-                System.out.println("read " + totalRead + " bytes.");
-                fos.write(data, 0, read);
+            DataOutputStream fluxoSaida = new DataOutputStream(conexao.getOutputStream());
+            Servidor.nomeArquivo = fluxoEntrada.readUTF(); //espera o cliente enviar o nome do arquivo que deseja
+            File file = new File(Servidor.pastaArquivo+Servidor.nomeArquivo);
+            FileInputStream in = new FileInputStream(Servidor.pastaArquivo+Servidor.nomeArquivo);
+            int size = (int) file.length();
+            fluxoSaida.writeUTF(String.valueOf(file.length())); //o servidor passa o tamanho do arquivo que o cliente vai receber
+            /*********************************************************/
+            /* Inicia comunicacao */
+            byte[] data = new byte[size];
+            while (in.read(data) > 0) {
+                fluxoSaida.write(data);
             }
-            fos.close();
-            fluxoEntrada.close();
+
+            in.close();
+            fluxoSaida.close();
 
         } catch (IOException e) {
             e.printStackTrace();

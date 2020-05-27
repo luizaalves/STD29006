@@ -6,21 +6,23 @@ import java.net.Socket;
 
 public class Servidor {
     private static int porta;
-    public static String pastaArquivo;
+    public static String nomeArquivo,pastaArquivo;
     public static void main(String args[]) throws IOException {
         try{
             porta = Integer.parseInt(args[0]);
             pastaArquivo = args[1];
         }catch (Exception e) {
             porta = 1234;
-            pastaArquivo="/home/luiza";
+            pastaArquivo ="/home/luiza/STD29006/";
         }
         ServerSocket servidor = new ServerSocket(porta);
         System.out.println("Aguardando por conexoes");
+        int countClients=0;
         while(true){
+            countClients++;
             Socket conexao = servidor.accept();
-            Thread t = new ServidorThread(conexao);
-            t.start();
+            Thread cliente = new ServidorThread(conexao);
+            cliente.start();
         }
     }
 }

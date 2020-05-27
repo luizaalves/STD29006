@@ -2,8 +2,6 @@ package cliente;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.Scanner;
-
 /**
  * Cliente que envia uma String em UTF por um socket TCP e espera
  * por uma resposta do servidor
@@ -14,33 +12,37 @@ import java.util.Scanner;
 public class Cliente {
     private static String ipServidor;
     public static void main(String[] args) throws IOException{
-        String pastaArquivo;
+        String nomeArquivo;
         int porta;
         try{
             ipServidor = args[0];
             porta = Integer.parseInt(args[1]);
-            pastaArquivo = args[2];
+            nomeArquivo = args[2];
         }catch (Exception e) {
+            ipServidor = "127.0.0.1";
             porta = 1234;
-            pastaArquivo ="./";
+            nomeArquivo ="arq.txt";
         }
         /* Estabele conexao com o servidor */
         Socket conexao = new Socket(ipServidor, porta);
-        /*********************************************************/
-        /* Estabelece fluxos de entrada e saida */
+        DataInputStream fluxoEntrada = new DataInputStream(
+                new BufferedInputStream(conexao.getInputStream()));
         DataOutputStream fluxoSaida = new DataOutputStream(conexao.getOutputStream());
-        File file = new File(pastaArquivo+"arq.txt");
-        FileInputStream in = new FileInputStream(pastaArquivo +"arq.txt");
-        int size = (int) file.length();
-        fluxoSaida.writeUTF(String.valueOf(file.length()));
-        /*********************************************************/
-        /* Inicia comunicacao */
-        byte[] data = new byte[size];
-        while (in.read(data) > 0) {
-            fluxoSaida.write(data);
-        }
+        FileOutputStream fos = new FileOutputStream("/home/luiza/STD29006/recebido-do-servidor.txt");
+        fluxoSaida.writeUTF(nomeArquivo);
+        System.out.println(nomeArquivo);
+        int count = Integer.parseInt(fluxoEntrada.readUTF());
+        byte[] data = new byte[2048];
+        int read;
+        int totalRead = 0;
 
-        in.close();
-        fluxoSaida.close();
+        while((read=fluxoEntrada.read(data,0,Math.min(data.length,count)))>0){
+            totalRead += read;
+            count -= read;
+            System.out.println("read " + totalRead + " bytes.");
+            fos.write(data, 0, read);
+        }
+        fos.close();
+        fluxoEntrada.close();
     }
 }
